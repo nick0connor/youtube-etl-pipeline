@@ -78,7 +78,7 @@ def parse_dates(
         
 def clean(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Main cleaning entry point
+    Main cleaning entry point. Specific to current csv
     
     Returns:
         (cleaned_df, rejects_df).
@@ -89,7 +89,7 @@ def clean(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     
     return df, rejects
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     df = load_csv()
     cleaned, rejected = clean(df)
     
