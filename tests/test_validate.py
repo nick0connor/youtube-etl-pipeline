@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 import pandas as pd
-from datetime import datetime
-from src.clean import parse_YYDDMM_date, cast_booleans, fill_missing, parse_dates
+from datetime import datetime, timezone
+from src.clean import parse_YYDDMM_date, cast_booleans, fill_missing, parse_dates, clean
 
 # parse_YYDDMM_date
 
@@ -144,3 +144,35 @@ def test_parse_dates_works_datetime_col():
     assert len(cleaned) == 2
     assert len(rejects) == 1 
     assert cleaned["publish_time"].to_list() == ["2017-11-13T17:13:01.000Z", "2017-11-14T10:00:00.000Z"] 
+    
+def test_clean_returns_two_dataframes():
+    df = pd.DataFrame({
+        "video_id": ["abc123"],
+        "trending_date": ["17.14.11"],
+        "publish_time": ["2017-11-13T17:13:01.000Z"],
+        "comments_disabled": ["False"],
+        "ratings_disabled": ["False"],
+        "video_error_or_removed": ["False"],
+        "description": [None]
+    })
+    cleaned, rejects = clean(df)
+    assert len(cleaned) == 1
+    assert len(rejects) == 0
+    
+def test_clean_returns_correct_info():
+    df = pd.DataFrame({
+        "video_id": ["abc123"],
+        "trending_date": ["17.14.11"],
+        "publish_time": ["2017-11-13T17:13:01.000Z"],
+        "comments_disabled": ["False"],
+        "ratings_disabled": ["False"],
+        "video_error_or_removed": ["False"],
+        "description": [None]
+    })
+    cleaned, rejects = clean(df)
+    assert cleaned.iloc[0]["trending_date"] == datetime(2017, 11, 14)
+    assert cleaned.iloc[0]["publish_time"] == datetime(2017, 11, 13, 17, 13, 1, tzinfo=timezone.utc)
+    assert cleaned["comments_disabled"].dtype == bool
+    assert cleaned["ratings_disabled"].dtype == bool
+    assert cleaned["video_error_or_removed"].dtype == bool
+    assert cleaned["description"].to_list() == [""]
