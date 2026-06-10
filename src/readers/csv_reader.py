@@ -19,7 +19,7 @@ def load_csv(path: Path = DATA_PATH) -> pd.DataFrame:
     )
     return df
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     df = load_csv()
     print(df.shape)
     print("\n--- Null counts ---")
