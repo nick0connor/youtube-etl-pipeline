@@ -2,6 +2,7 @@ import pytest
 import pandas as pd
 from src.readers.json_reader import load_categories
 from src.readers.csv_reader import load_csv
+from unittest.mock import MagicMock, patch
 from datetime import datetime, timezone
 from src.readers.api_reader import fetch_trending, parse_items, load_api
 
@@ -128,3 +129,36 @@ def test_parse_items_snapshot_at_injected():
 def test_parse_items_published_at_is_datetime():
     df = parse_items(MOCK_ITEMS)
     assert pd.api.types.is_datetime64_any_dtype(df["published_at"])
+    
+# fetch_trending
+
+def test_fetch_trending_returns_list():
+    mock_youtube = MagicMock()
+    mock_youtube.videos().list().execute.return_value = {
+        "items": MOCK_ITEMS,
+        "nextPageToken": None
+    }
+    result = fetch_trending(mock_youtube, max_results=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    
+def test_fetch_trending_stops_without_next_page():
+    mock_youtube = MagicMock()
+    mock_youtube.videos().list().execute.return_value = {
+        "items": MOCK_ITEMS
+    }
+    result = fetch_trending(mock_youtube, max_results=50)
+    assert len(result) == 2
+    
+# load_api
+
+def test_load_api_returns_dataframe():
+    with patch("src.readers.api_reader.get_youtube_client") as mock_client:
+        mock_youtube = MagicMock()
+        mock_client.return_value = mock_youtube
+        mock_youtube.videos().list().execute.return_value = {
+            "items": MOCK_ITEMS
+        }
+        df = load_api()
+        assert isinstance(df, pd.DataFrame)
+        assert len(df) == 2
