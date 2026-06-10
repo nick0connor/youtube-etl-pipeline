@@ -94,7 +94,7 @@ def load_api(region_code: str = "US") -> pd.DataFrame:
     items = fetch_trending(youtube, region_code=region_code)
     return parse_items(items)
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma: no cover
     df = load_api()
     print(df.shape)
     print(df.dtypes)    
