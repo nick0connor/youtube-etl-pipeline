@@ -1,6 +1,7 @@
 import pytest
 import pandas as pd
 from src.readers.json_reader import load_categories
+from src.readers.csv_reader import load_csv
 
 # load_categories
 
@@ -24,3 +25,24 @@ def test_load_categories_known_entry():
     df = load_categories()
     comedy = df[df["category_id"] == "34"]
     assert comedy.iloc[0]["category_name"] == "Comedy"
+    
+# load_csv
+
+def test_load_csv_returns_dataframe():
+    df = load_csv()
+    assert isinstance(df, pd.DataFrame)
+    
+def test_load_csv_has_correct_columns():
+    df = load_csv()
+    expected_cols = [
+        "video_id", "trending_date", "title", "channel_title",
+        "category_id", "publish_time", "tags", "views", "likes",
+        "dislikes", "comment_count", "thumbnail_link",
+        "comments_disabled", "ratings_disabled",
+        "video_error_or_removed", "description"
+    ]
+    assert list(df.columns) == expected_cols
+    
+def test_load_csv_category_id_is_string():
+    df = load_csv()
+    assert pd.api.types.is_string_dtype(df["category_id"])
