@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS stg_channels (
 
 CREATE TABLE IF NOT EXISTS stg_videos (
     video_id        TEXT PRIMARY KEY,
-    channel_id      TEXT NOT NULL REFERENCES stg_channels(channel_id),
+    channel_id      TEXT, -- potentially NULL due to not all datasets having channel information
     category_id     TEXT NOT NULL REFERENCES stg_categories(category_id),
     title           TEXT NOT NULL,
     published_at    TIMESTAMPTZ,
