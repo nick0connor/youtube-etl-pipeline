@@ -32,3 +32,11 @@ CREATE TABLE IF NOT EXISTS stg_trending_snapshots (
     comment_count   BIGINT NOT NULL,
     _loaded_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS stg_rejects (
+    id              BIGSERIAL PRIMARY KEY,
+    source_name     TEXT NOT NULL,
+    raw_payload     JSONB NOT NULL,
+    reason          TEXT NOT NULL,
+    rejected_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
