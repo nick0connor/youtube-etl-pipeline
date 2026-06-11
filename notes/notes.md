@@ -1,11 +1,7 @@
 # YouTube Performance Tool
 
 ### Pitch
-    A content analytics ingestion platform that consolidates 
-    live YouTube performance data with historical trending 
-    records, enabling a media team to monitor channel health, 
-    detect engagement anomalies, and identify regional 
-    content trends over time.
+    A data ingestion pipeline that pulls live trending video data from the YouTube API and cross-references it against a historical Kaggle dataset of US trending videos. It validates and cleans both sources, loads them into PostgreSQL staging tables, and captures any rejected records with reasons for auditing. The goal is to give a media analytics team a reliable, scheduled feed of what's trending — with enough historical context to distinguish a genuine trend from a one-day spike.
 
 **Every decision you make: what tables to build, what validation rules to write, 
 what the AI summary says, should serve that sentence.** 
@@ -124,3 +120,9 @@ That last one is your AI layer, and it earns its place because it has a real use
 [Kaggle CSV](https://www.kaggle.com/datasets/datasnaek/youtube-new?select=US_category_id.json)
 
 [YouTube API](https://developers.google.com/youtube/v3)
+
+## A few tips for the conversation:
+
+- Lead with the problem, not the technology. Don't open with "I used psycopg and pandas" — open with "the goal was to build something that answers what's actually trending right now and whether it's likely to last."
+- The two-source angle is your strongest talking point. Most student projects use one static dataset. Having a live API feeding into the same pipeline as a historical CSV, with a shared category lookup table joining them, shows you thought about real data engineering problems.
+- Be ready for "why YouTube?" Your answer is that content performance analytics is a real and growing vertical, YouTube's API is production-grade, and the data is rich enough to demonstrate every layer of the pipeline — validation, cleaning, UPSERT loading, and reject tracking.
