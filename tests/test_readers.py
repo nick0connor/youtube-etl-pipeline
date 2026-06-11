@@ -2,7 +2,7 @@ import pytest
 import pandas as pd
 from src.readers.json_reader import load_categories
 from src.readers.csv_reader import load_csv
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, ANY
 from datetime import datetime, timezone
 from src.readers.api_reader import fetch_trending, parse_items, load_api
 
@@ -162,3 +162,13 @@ def test_load_api_returns_dataframe():
         df = load_api()
         assert isinstance(df, pd.DataFrame)
         assert len(df) == 2
+        
+# get_youtube_client
+
+def test_get_youtube_client_returns_client():
+    with patch("src.readers.api_reader.build") as mock_build:
+        mock_build.return_value = MagicMock()
+        from src.readers.api_reader import get_youtube_client
+        client = get_youtube_client()
+        assert client is not None
+        mock_build.assert_called_once_with("youtube", "v3", developerKey=ANY)
