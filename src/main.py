@@ -57,6 +57,17 @@ def run_csv_pipeline() -> None:
     df_categories = load_categories()
     db_load_categories(df_categories)
     log.info(f"ingest.load source=stg_categories rows={len(df_categories)}")
+
+    df_csv_snapshots = df_cleaned[[
+        "video_id", "trending_date", "views", "likes", "comment_count"
+    ]].copy()
+    df_csv_snapshots = df_csv_snapshots.rename(columns={
+        "trending_date": "snapshot_at",
+        "views": "view_count",
+        "likes": "like_count"
+    })
+    load_snapshots(df_csv_snapshots)
+    log.info(f"ingest.load source=stg_trending_snapshots(csv) rows={len(df_csv_snapshots)}")
     
     df_cleaned["channel_id"] = None
     df_videos = df_cleaned[[
