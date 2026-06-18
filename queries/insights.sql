@@ -1,3 +1,9 @@
+-- NOTE: 
+-- Due to the nature of the datasets: 
+-- stg_videos.channel_id will only be NULL IFF video is sourced from the historical CSV data
+-- Modern API calls include the channel_id and thus stg_videos.channel_id IS NOT NULL = true
+-- I use this split to denote modern/historical. Sloppy, but efficient
+
 -- TODAY'S TRENDING VIDEOS
 -- What is currently trending and in what category?
 -- ID | Title | Channel | Category | Views | Likes | Comments | Snapshot Time
@@ -42,7 +48,8 @@ WITH historical AS (
     SELECT
         c.category_name,
         COUNT(*) AS historical_count
-    FROM stg_videos v
+    FROM stg_trending_snapshots s
+    JOIN stg_videos v ON s.video_id = v.video_id
     JOIN stg_categories c ON v.category_id = c.category_id
     WHERE v.channel_id IS NULL
     GROUP BY c.category_name
@@ -54,7 +61,10 @@ live AS (
     FROM stg_trending_snapshots s
     JOIN stg_videos v ON s.video_id = v.video_id
     JOIN stg_categories c ON v.category_id = c.category_id
-    WHERE s.snapshot_at = (SELECT MAX(snapshot_at) FROM stg_trending_snapshots)
+    WHERE v.channel_id IS NOT NULL
+      AND s.snapshot_at = (SELECT MAX(snapshot_at) FROM stg_trending_snapshots WHERE video_id IN (
+          SELECT video_id FROM stg_videos WHERE channel_id IS NOT NULL
+      ))
     GROUP BY c.category_name
 )
 SELECT
@@ -161,16 +171,21 @@ WITH snapshot_deltas AS (
 )
 SELECT
     v.title,
+    c.category_name,
     sd.views_gained,
     sd.likes_gained,
     sd.comments_gained,
-    sd.time_delta
+    sd.time_delta,
+    sd.snapshot_at AS most_recent_snapshot
 FROM snapshot_deltas sd
 JOIN stg_videos v
     ON v.video_id = sd.video_id
+JOIN stg_categories c
+	ON v.category_id = c.category_id 
 WHERE rn = 1
   AND views_gained IS NOT NULL
-ORDER BY views_gained DESC;
+--  AND v.channel_id IS NOT NULL
+ORDER BY sd.views_gained DESC;
 
 
 -- TO DO
@@ -178,6 +193,7 @@ ORDER BY views_gained DESC;
 
 -- HISTORICAL CATEGORY DOMINANCE
 -- Which categories have trended most over time historically?
+
 
 
 -- TRENDING CHANNELS
