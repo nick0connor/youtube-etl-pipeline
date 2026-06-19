@@ -30,6 +30,15 @@ def run_csv_pipeline() -> None:
     df_categories = load_categories()
     db_load_categories(df_categories)
     log.info(f"ingest.load source=stg_categories rows={len(df_categories)}")
+    
+    df_cleaned["channel_id"] = None
+    df_videos = df_cleaned[[
+        "video_id", "channel_id", "category_id", "title", "publish_time", "tags"
+    ]].drop_duplicates(subset="video_id").copy()
+    df_videos = df_videos.rename(columns={"publish_time": "published_at"})
+
+    load_videos(df_videos)
+    log.info(f"ingest.load source=stg_videos rows={len(df_videos)}")
 
     df_csv_snapshots = df_cleaned[[
         "video_id", "trending_date", "views", "likes", "comment_count"
@@ -41,15 +50,6 @@ def run_csv_pipeline() -> None:
     })
     load_snapshots(df_csv_snapshots)
     log.info(f"ingest.load source=stg_trending_snapshots(csv) rows={len(df_csv_snapshots)}")
-    
-    df_cleaned["channel_id"] = None
-    df_videos = df_cleaned[[
-        "video_id", "channel_id", "category_id", "title", "publish_time", "tags"
-    ]].drop_duplicates(subset="video_id").copy()
-    df_videos = df_videos.rename(columns={"publish_time": "published_at"})
-    
-    load_videos(df_videos)
-    log.info(f"ingest.load source=stg_videos rows={len(df_videos)}")
     
     if len(df_rejects) > 0:
         load_rejects(df_rejects, source_name="kaggle_csv")
