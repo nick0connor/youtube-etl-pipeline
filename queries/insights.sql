@@ -100,8 +100,8 @@ SELECT
     ) AS engagement_rate_pct
 FROM stg_trending_snapshots s
 JOIN stg_videos v ON s.video_id = v.video_id
-JOIN stg_channels ch ON v.channel_id = ch.channel_id 
 JOIN stg_categories c ON v.category_id = c.category_id
+LEFT JOIN stg_channels ch ON v.channel_id = ch.channel_id 
 WHERE s.snapshot_at = (SELECT MAX(snapshot_at) FROM stg_trending_snapshots)
 ORDER BY engagement_rate_pct DESC
 LIMIT 20;
@@ -184,18 +184,73 @@ JOIN stg_categories c
 	ON v.category_id = c.category_id 
 WHERE rn = 1
   AND views_gained IS NOT NULL
---  AND v.channel_id IS NOT NULL
+ AND v.channel_id IS NOT NULL
 ORDER BY sd.views_gained DESC;
-
-
--- TO DO
 
 
 -- HISTORICAL CATEGORY DOMINANCE
 -- Which categories have trended most over time historically?
+-- Category | # Trending Appearances | Unique Videos | Avg Views While Trending
+SELECT
+    c.category_name,
+    COUNT(*) AS total_trending_appearances,
+    COUNT(DISTINCT v.video_id) AS unique_videos,
+    ROUND(AVG(s.view_count)) AS avg_views_when_trending
+FROM stg_trending_snapshots s
+JOIN stg_videos v ON s.video_id = v.video_id
+JOIN stg_categories c ON v.category_id = c.category_id
+WHERE v.channel_id IS NULL
+GROUP BY c.category_name
+ORDER BY total_trending_appearances DESC;
 
 
-
--- TRENDING CHANNELS
+-- TRENDING CHANNELS NOW
 -- Which channels are in trending and what categories do they post videos in?
+-- Channel | Category | Number of Videos In Category
+SELECT
+    ch.channel_title,
+    c.category_name,
+    COUNT(DISTINCT v.video_id) AS unique_videos_trending
+FROM stg_channels ch
+JOIN stg_videos v ON ch.channel_id = v.channel_id 
+JOIN stg_trending_snapshots s ON s.video_id = v.video_id 
+JOIN stg_categories c ON v.category_id = c.category_id
+GROUP BY ch.channel_title, c.category_name 
+ORDER BY unique_videos_trending DESC;
 
+
+-- REJECT SUMMARY
+-- What's being rejected, and why?
+-- Source | Reason | # Rejected
+SELECT
+    source_name,
+    reason,
+    COUNT(*) AS reject_count
+FROM stg_rejects
+GROUP BY source_name, reason
+ORDER BY reject_count DESC;
+
+
+-- NEW TO TRENDING
+-- What videos just entered trending this snapshot?
+-- Title | Channel | Category | Views | Likes | Comments | Snapshot
+SELECT
+    v.title,
+    ch.channel_title,
+    c.category_name,
+    s.view_count,
+    s.like_count,
+    s.comment_count,
+    s.snapshot_at
+FROM stg_trending_snapshots s
+JOIN stg_videos v ON s.video_id = v.video_id
+JOIN stg_categories c ON v.category_id = c.category_id
+LEFT JOIN stg_channels ch ON v.channel_id = ch.channel_id
+WHERE s.snapshot_at = (SELECT MAX(snapshot_at) FROM stg_trending_snapshots WHERE video_id IN (
+    SELECT video_id FROM stg_videos WHERE channel_id IS NOT NULL
+))
+AND v.video_id NOT IN (
+    SELECT video_id FROM stg_trending_snapshots
+    WHERE snapshot_at < (SELECT MAX(snapshot_at) FROM stg_trending_snapshots)
+    AND video_id IN (SELECT video_id FROM stg_videos WHERE channel_id IS NOT NULL)
+);
