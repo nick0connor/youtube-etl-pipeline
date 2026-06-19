@@ -1,30 +1,3 @@
-# Completed:
-# - Get Kaggle Data
-# - Get YouTube API keyx
-# - Reader for CSV (Kaggle)
-# - Reader for JSON (Kaggle)
-# - Reader for API 
-# - Tests for CSV functions
-# - Tests for JSON functions
-# - Tests for API functions
-# - Get 100% Coverage for test functions
-# - Get PostgreSQL database online
-# - Link PostgreSQL to Python
-# - Set up schema
-# - Create functions to load SQL from pandas
-# - Tests for load functions
-# - Account for CSV having no channel_id column (removed FK constraint, allowed NULL)
-# - Create script to load Kaggle + api data into DB (main.py)
-
-# Things Left to Do:
-# - Set up api script to daily refresh
-# - Create queries/views for insight info (top growing vids, channels in decline)
-# - Get Gemini API key (Potentially OpenAI?)
-# - Establish pipeline to LLM for report summary after each run
-# - Ensure pytest coverage 80%+ if not already
-# - README
-# - Set up docker file
-
 import logging
 import pandas as pd
 from datetime import datetime, timezone
