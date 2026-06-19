@@ -17,6 +17,9 @@ MOCK_CLEANED = pd.DataFrame({
     "video_error_or_removed": [False, False],
     "trending_date": [datetime(2026, 6, 9, tzinfo=timezone.utc)] * 2,
     "channel_title": ["Nintendo", "Marvel"],
+    "views": [100000, 200000],
+    "likes": [5000, 8000],
+    "comment_count": [300, 450]
 })
 
 MOCK_CATEGORIES = pd.DataFrame({
@@ -43,11 +46,12 @@ MOCK_API_DF = pd.DataFrame({
 @patch("src.main.load_rejects")
 @patch("src.main.load_videos")
 @patch("src.main.db_load_categories")
+@patch("src.main.load_snapshots")
 @patch("src.main.load_categories", return_value=MOCK_CATEGORIES)
 @patch("src.main.clean", return_value=(MOCK_CLEANED, pd.DataFrame()))
 @patch("src.main.load_csv", return_value=MOCK_CLEANED)
 def test_run_csv_pipeline(
-    mock_csv, mock_clean, mock_cats,
+    mock_csv, mock_clean, mock_cats, mock_snapshots,
     mock_db_cats, mock_videos, mock_rejects
 ):
     run_csv_pipeline()
@@ -61,11 +65,12 @@ def test_run_csv_pipeline(
 @patch("src.main.load_rejects")
 @patch("src.main.load_videos")
 @patch("src.main.db_load_categories")
+@patch("src.main.load_snapshots")
 @patch("src.main.load_categories", return_value=MOCK_CATEGORIES)
 @patch("src.main.clean", return_value=(MOCK_CLEANED, pd.DataFrame({"reject_reason": ["bad date"]})))
 @patch("src.main.load_csv", return_value=MOCK_CLEANED)
 def test_run_csv_pipeline_with_rejects(
-    mock_csv, mock_clean, mock_cats,
+    mock_csv, mock_clean, mock_cats, mock_snapshots,
     mock_db_cats, mock_videos, mock_rejects
 ):
     run_csv_pipeline()
