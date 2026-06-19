@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch, call
-from src.load import load_categories, load_channels, load_videos, load_snapshots, load_rejects
+from src.load import load_categories, load_channels, load_videos, load_snapshots, load_rejects, load_summary
 
 MOCK_CATEGORIES = pd.DataFrame({
     "category_id": ["20", "24"],
@@ -117,3 +117,17 @@ def test_load_rejects_skips_empty_dataframe():
     with patch("src.load.get_connection") as mock_conn:
         load_rejects(empty, source_name="test_source")
         mock_conn.assert_not_called()
+        
+        
+@patch("src.load.get_connection")
+def test_load_summary_executes_insert(mock_conn):
+    mock_cursor = MagicMock()
+    mock_conn.return_value.__enter__ = MagicMock(return_value=MagicMock(
+        cursor=MagicMock(return_value=MagicMock(
+            __enter__=MagicMock(return_value=mock_cursor),
+            __exit__=MagicMock(return_value=False)
+        ))
+    ))
+    mock_conn.return_value.__exit__ = MagicMock(return_value=False)
+    load_summary("This is a test summary.")
+    mock_cursor.execute.assert_called_once()
