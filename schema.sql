@@ -40,3 +40,9 @@ CREATE TABLE IF NOT EXISTS stg_rejects (
     reason          TEXT NOT NULL,
     rejected_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS daily_summaries (
+    id              BIGSERIAL PRIMARY KEY,
+    generated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    summary_text    TEXT NOT NULL
+);

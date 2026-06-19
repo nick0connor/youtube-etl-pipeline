@@ -2,6 +2,7 @@ import logging
 from src.config import get_gemini_client
 from src.queries import run_query
 import textwrap
+from src.load import load_summary
 
 log = logging.getLogger(__name__)
 
@@ -81,16 +82,21 @@ def build_prompt(report_data: dict[str, str], queries_override: dict[str, str] =
     
     return textwrap.dedent(prompt)
 
-def generate_summary() -> str:
+def generate_summary(queries_override: dict[str, str] = None) -> str:
     report_data = gather_report_data()
-    prompt = build_prompt(report_data)
+    prompt = build_prompt(report_data, queries_override)
 
     client = get_gemini_client()
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=prompt
     )
-    return response.text
+    
+    summary_text = response.text
+    load_summary(summary_text)
+    log.info("ingest.load source=daily_summaries rows=1")
+    
+    return summary_text
 
 if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")

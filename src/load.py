@@ -90,3 +90,14 @@ def load_rejects(rejects: pd.DataFrame, source_name: str) -> None:
                     datetime.now(timezone.utc)
                 ))
         conn.commit()
+        
+def load_summary(summary_text: str) -> None:
+    sql = """
+        INSERT INTO daily_summaries (generated_at, summary_text)
+        VALUES (%s, %s);
+    """
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, (datetime.now(timezone.utc), summary_text))
+        conn.commit()
+    
