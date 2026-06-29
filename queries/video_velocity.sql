@@ -32,6 +32,7 @@ WITH snapshot_deltas AS (
 )
 SELECT
     v.title,
+	ch.channel_title,
     c.category_name,
     sd.views_gained,
     sd.likes_gained,
@@ -43,7 +44,10 @@ JOIN stg_videos v
     ON v.video_id = sd.video_id
 JOIN stg_categories c
 	ON v.category_id = c.category_id 
+JOIN stg_channels ch
+	ON ch.channel_id = v.channel_id 
 WHERE rn = 1
-  AND views_gained IS NOT NULL
- AND v.channel_id IS NOT NULL
+	AND views_gained IS NOT NULL
+	AND v.channel_id IS NOT null
+	AND sd.snapshot_at = (SELECT MAX(snapshot_at) FROM stg_trending_snapshots)
 ORDER BY sd.views_gained DESC;

@@ -9,5 +9,6 @@ FROM stg_channels ch
 JOIN stg_videos v ON ch.channel_id = v.channel_id 
 JOIN stg_trending_snapshots s ON s.video_id = v.video_id 
 JOIN stg_categories c ON v.category_id = c.category_id
+WHERE s.snapshot_at = (SELECT MAX(snapshot_at) FROM stg_trending_snapshots)
 GROUP BY ch.channel_title, c.category_name 
 ORDER BY unique_videos_trending DESC;

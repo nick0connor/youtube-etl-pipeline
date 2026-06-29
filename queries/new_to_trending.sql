@@ -20,4 +20,5 @@ AND v.video_id NOT IN (
     SELECT video_id FROM stg_trending_snapshots
     WHERE snapshot_at < (SELECT MAX(snapshot_at) FROM stg_trending_snapshots)
     AND video_id IN (SELECT video_id FROM stg_videos WHERE channel_id IS NOT NULL)
-);
+)
+order by c.category_name asc;
